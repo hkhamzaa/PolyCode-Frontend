@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { getStats } from '../utils/api';
 import { getCategoryMeta, formatCategory } from '../utils/categories';
 
-export default function StatsPage() {
+export default function StatsPage({ selectedLanguage }) {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 

@@ -4,8 +4,9 @@ import { getDocuments } from '../utils/api';
 import DocCard from '../components/DocCard';
 import { getCategoryMeta, formatCategory } from '../utils/categories';
 
-export default function CategoryPage() {
-  const { category } = useParams();
+export default function CategoryPage({ selectedLanguage }) {
+  const paramsUrl = useParams();
+  const category = paramsUrl['*'];
   const [docs, setDocs]     = useState([]);
   const [total, setTotal]   = useState(0);
   const [page, setPage]     = useState(1);
@@ -14,13 +15,14 @@ export default function CategoryPage() {
 
   useEffect(() => {
     setLoading(true);
-    getDocuments({ category, page, limit: LIMIT, ungrouped: true })
+    const params = selectedLanguage ? { language: selectedLanguage, category, page, limit: LIMIT, ungrouped: true } : { category, page, limit: LIMIT, ungrouped: true };
+    getDocuments(params)
       .then(r => {
         setDocs(r.data.documents);
         setTotal(r.data.total);
       })
       .finally(() => setLoading(false));
-  }, [category, page]);
+  }, [category, page, selectedLanguage]);
 
 
   return (

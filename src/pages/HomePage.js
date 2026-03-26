@@ -4,29 +4,35 @@ import { getDocuments, getStats, getCategories } from '../utils/api';
 import DocCard from '../components/DocCard';
 import { getCategoryMeta, formatCategory } from '../utils/categories';
 
-export default function HomePage() {
+export default function HomePage({ selectedLanguage }) {
   const [categories, setCategories] = useState([]);
   const [recent, setRecent] = useState([]);
   const [pyFiles, setPyFiles] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const params = selectedLanguage ? { language: selectedLanguage, limit: 100, ungrouped: true } : { limit: 100, ungrouped: true };
+    const metaParams = selectedLanguage ? { language: selectedLanguage } : {};
+    
     Promise.all([
-      getStats(),
-      getCategories(),
-      getDocuments({ limit: 100, fileType: 'md', ungrouped: true }),
-      getDocuments({ limit: 100, fileType: 'py', ungrouped: true }),
+      getStats(metaParams),
+      getCategories(metaParams),
+      getDocuments({ ...params, fileType: 'md' }),
+      getDocuments({ ...params, fileType: 'py' }),
     ]).then(([s, c, r, p]) => {
       setCategories(c.data);
       setRecent(r.data.documents);
       setPyFiles(p.data.documents);
     }).finally(() => setLoading(false));
-  }, []);
+  }, [selectedLanguage]);
 
   if (loading) {
     return (
       <div className="loading">
-        <div className="spinner" />
+        <div className="spinner-container">
+          <div className="spinner" />
+          <div className="spinner-inner" />
+        </div>
         <p>initialising hub…</p>
       </div>
     );
@@ -41,21 +47,18 @@ export default function HomePage() {
         </div>
         
         <h1>
-          Master Python with <br />
+          Master {selectedLanguage || 'Programming'} with <br />
           <span className="gradient-text">Absolute Precision.</span>
         </h1>
 
         <p>
-          I provide a curated collection of Python algorithms, data structures, 
+          I provide a curated collection of {selectedLanguage || 'programming'} algorithms, data structures, 
           and technical documentation designed for high-performance engineers.
         </p>
 
         <div className="hero-actions">
           <Link to="/search" className="btn-primary">
             Explore Documentation <span style={{ marginLeft: '4px' }}>→</span>
-          </Link>
-          <Link to="/stats" className="btn-secondary">
-            View Stats
           </Link>
         </div>
 

@@ -36,12 +36,12 @@ export default function Navbar({ toggleSidebar }) {
       </button>
 
       {/* Brand */}
-      <Link to="/" className="navbar-brand">
+      <Link to="/hub" className="navbar-brand">
         <div className="logo">
-          <span style={{ position: 'relative', zIndex: 1 }}>Py</span>
+          <span style={{ position: 'relative', zIndex: 1 }}>PC</span>
         </div>
         <div className="navbar-brand-text">
-          <span className="logo-text">PyHub</span>
+          <span className="logo-text">PolyCode</span>
           <span className="logo-sub">v2.0 docs</span>
         </div>
       </Link>
@@ -62,9 +62,8 @@ export default function Navbar({ toggleSidebar }) {
 
       {/* Links */}
       <div className="navbar-links">
-        <Link to="/" className={isActive('/')}>Home</Link>
+        <Link to="/hub" className={isActive('/hub')}>Home</Link>
         <Link to="/search" className={isActive('/search')}>Search</Link>
-        <Link to="/stats" className={isActive('/stats')}>Stats</Link>
       </div>
     </nav>
   );

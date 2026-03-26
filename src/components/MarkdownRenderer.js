@@ -4,13 +4,13 @@ import remarkGfm from 'remark-gfm';
 import CodeBlock from './CodeBlock';
 
 export default function MarkdownRenderer({ content, fileType, relatedCode, title }) {
-  if (fileType === 'py' || fileType === 'python') {
+  if (fileType !== 'markdown' && fileType !== 'md') {
     return (
       <div className="doc-body">
         <CodeBlock
-          language="python"
+          language={fileType === 'py' ? 'python' : fileType}
           code={content}
-          filename={`${title}.py`}
+          filename={title && fileType ? `${title}.${fileType === 'python' ? 'py' : fileType}` : title}
         />
       </div>
     );

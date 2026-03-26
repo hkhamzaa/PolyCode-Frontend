@@ -3,7 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { getDocuments } from '../utils/api';
 import DocCard from '../components/DocCard';
 
-export default function SearchPage() {
+export default function SearchPage({ selectedLanguage }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery]   = useState(searchParams.get('q') || '');
   const [fileType, setFileType] = useState(searchParams.get('fileType') || '');
@@ -16,7 +16,12 @@ export default function SearchPage() {
     if (!q && !ft) return;
     setLoading(true);
     setSearched(true);
-    getDocuments({ search: q || undefined, fileType: ft || undefined, page: pg, limit: 40 })
+    const params = { page: pg, limit: 40 };
+    if (q) params.search = q;
+    if (ft) params.fileType = ft;
+    if (selectedLanguage) params.category = selectedLanguage;
+    
+    getDocuments(params)
       .then(r => {
         setDocs(r.data.documents);
         setTotal(r.data.total);
@@ -29,8 +34,10 @@ export default function SearchPage() {
     const ft = searchParams.get('fileType') || '';
     setQuery(q);
     setFileType(ft);
-    doSearch(q, ft);
-  }, [searchParams]);
+    if (q || ft) {
+      doSearch(q, ft);
+    }
+  }, [searchParams, selectedLanguage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = (e) => {
     e.preventDefault();
