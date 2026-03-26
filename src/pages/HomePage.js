@@ -2,13 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getDocuments, getStats, getCategories } from '../utils/api';
 import DocCard from '../components/DocCard';
+import LazyDocCard from '../components/LazyDocCard';
 import { getCategoryMeta, formatCategory } from '../utils/categories';
+import { SkeletonGrid, PageSkeleton } from '../components/SkeletonLoader';
 
 export default function HomePage({ selectedLanguage }) {
   const [categories, setCategories] = useState([]);
   const [recent, setRecent] = useState([]);
   const [pyFiles, setPyFiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   useEffect(() => {
     const params = selectedLanguage ? { language: selectedLanguage, limit: 100, ungrouped: true } : { limit: 100, ungrouped: true };
@@ -23,17 +26,60 @@ export default function HomePage({ selectedLanguage }) {
       setCategories(c.data);
       setRecent(r.data.documents);
       setPyFiles(p.data.documents);
-    }).finally(() => setLoading(false));
+      
+      // Add a small delay for better UX
+      setTimeout(() => {
+        setLoading(false);
+        setInitialLoad(false);
+      }, 300);
+    }).catch((error) => {
+      console.error('Error loading home page data:', error);
+      setLoading(false);
+      setInitialLoad(false);
+    });
   }, [selectedLanguage]);
 
-  if (loading) {
+  if (initialLoad) {
+    return <PageSkeleton />;
+  }
+
+  if (loading && !initialLoad) {
     return (
-      <div className="loading">
-        <div className="spinner-container">
-          <div className="spinner" />
-          <div className="spinner-inner" />
-        </div>
-        <p>initialising hub…</p>
+      <div>
+        {/* ── Hero ── */}
+        <section className="hero fade-up">
+          <div className="hero-eyebrow">
+            <span>Available for code collaboration</span>
+          </div>
+          
+          <h1>
+            Master {selectedLanguage || 'Programming'} with <br />
+            <span className="gradient-text">Absolute Precision.</span>
+          </h1>
+
+          <p>
+            I provide a curated collection of {selectedLanguage || 'programming'} algorithms, data structures, 
+            and technical documentation designed for high-performance engineers.
+          </p>
+
+          <div className="hero-actions">
+            <Link to="/search" className="btn-primary">
+              Explore Documentation <span style={{ marginLeft: '4px' }}>→</span>
+            </Link>
+          </div>
+        </section>
+
+        <div className="divider-accent" style={{ opacity: 0.1 }} />
+
+        {/* ── Loading Skeleton Grid ── */}
+        <section style={{ marginBottom: '80px' }}>
+          <div className="section-header" style={{ marginBottom: '32px' }}>
+            <span className="section-title">Latest Archives</span>
+            <span className="section-label">Documentation & Scripts</span>
+          </div>
+          
+          <SkeletonGrid count={6} type="doc" />
+        </section>
       </div>
     );
   }
@@ -74,8 +120,8 @@ export default function HomePage({ selectedLanguage }) {
         </div>
         
         <div className="grid grid-bento">
-          {recent.map(doc => <DocCard key={doc.path} doc={doc} />)}
-          {pyFiles.map(doc => <DocCard key={doc.path} doc={doc} />)}
+          {recent.map(doc => <LazyDocCard key={doc.path} doc={doc} />)}
+          {pyFiles.map(doc => <LazyDocCard key={doc.path} doc={doc} />)}
         </div>
       </section>
 

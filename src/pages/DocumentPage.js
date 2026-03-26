@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getDocument } from '../utils/api';
 import MarkdownRenderer from '../components/MarkdownRenderer';
 import { getCategoryMeta, formatCategory } from '../utils/categories';
+import { formatName } from '../utils/format';
 
 export default function DocumentPage({ selectedLanguage }) {
   const paramsUrl = useParams();
@@ -45,7 +46,7 @@ export default function DocumentPage({ selectedLanguage }) {
         <span className="sep">/</span>
         <Link to={`/category/${doc.category}`}>{doc.category}</Link>
         <span className="sep">/</span>
-        <span className="active-path">{doc.title}{isPython ? '.py' : '.md'}</span>
+        <span className="active-path">{formatName(doc.title)}{isPython ? '.py' : '.md'}</span>
       </nav>
 
       {/* Header - Only for Non-Python/Documentation files */}
@@ -57,7 +58,7 @@ export default function DocumentPage({ selectedLanguage }) {
             </span>
             <span className="type-pill markdown">📝 Documentation</span>
           </div>
-          <h1>{doc.title}</h1>
+          <h1>{formatName(doc.title)}</h1>
           <div className="doc-stats">
             {doc.wordCount > 0 && <span>{doc.wordCount.toLocaleString()} words</span>}
             {doc.lines > 0 && <span>{doc.lines} lines</span>}

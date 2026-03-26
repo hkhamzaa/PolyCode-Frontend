@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { getCategoryMeta, formatCategory } from '../utils/categories';
+import { formatName } from '../utils/format';
 
 export default function DocCard({ doc }) {
   const meta = getCategoryMeta(doc.category);
@@ -21,7 +22,7 @@ export default function DocCard({ doc }) {
         </span>
       </div>
 
-      <h3>{doc.title}</h3>
+      <h3>{formatName(doc.title)}</h3>
 
       {/* Excerpt */}
       {doc.excerpt && <p>{doc.excerpt}</p>}

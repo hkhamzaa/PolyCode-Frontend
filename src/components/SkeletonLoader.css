@@ -1,0 +1,161 @@
+/* ── Skeleton Loader Styles ── */
+.skeleton {
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0.03) 25%, 
+    rgba(255, 255, 255, 0.08) 50%, 
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Language Card Skeleton */
+.skeleton-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 48px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.skeleton-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 24px;
+  border-radius: 12px;
+}
+
+.skeleton-icon.small {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 0;
+  margin-right: 12px;
+}
+
+.skeleton-title {
+  width: 120px;
+  height: 24px;
+  margin-bottom: 8px;
+}
+
+.skeleton-text {
+  width: 100%;
+  height: 16px;
+  margin-bottom: 8px;
+}
+
+.skeleton-text.short {
+  width: 60%;
+}
+
+.skeleton-text.medium {
+  width: 80%;
+}
+
+/* Document Card Skeleton */
+.skeleton-doc-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(10px);
+}
+
+.skeleton-header {
+  width: 70%;
+  height: 20px;
+  margin-bottom: 16px;
+}
+
+.skeleton-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.skeleton-tags .skeleton {
+  width: 60px;
+  height: 24px;
+  border-radius: 12px;
+}
+
+/* Skeleton Grid */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 40px auto 0;
+  padding: 0 20px;
+}
+
+/* Skeleton List */
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-list-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+}
+
+/* Page Skeleton */
+.page-skeleton {
+  padding: 40px 20px;
+}
+
+.skeleton-hero {
+  width: 100%;
+  max-width: 600px;
+  height: 80px;
+  margin: 0 auto 40px;
+  border-radius: 16px;
+}
+
+/* Responsive Skeletons */
+@media (max-width: 900px) {
+  .skeleton-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .skeleton-card {
+    padding: 32px 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .skeleton-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 0 16px;
+  }
+  
+  .skeleton-card {
+    padding: 32px 24px;
+  }
+  
+  .skeleton-title {
+    width: 100px;
+    height: 20px;
+  }
+  
+  .skeleton-hero {
+    height: 60px;
+  }
+}

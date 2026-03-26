@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getStats, getTree, getLanguages } from '../utils/api';
+import { formatName } from '../utils/format';
 
 const FolderIcon = ({ color = 'currentColor' }) => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -42,7 +43,7 @@ function TreeNode({ node, selectedLanguage, depth = 0, onFileClick }) {
         >
           <span className="tree-caret">{expanded ? '▾' : '▸'}</span>
           <span className="tree-icon"><FolderIcon color="var(--violet)" /></span>
-          <span className="tree-label">{node.name}</span>
+          <span className="tree-label">{formatName(node.name)}</span>
         </button>
         {expanded && hasChildren && (
           <div className="tree-children">
@@ -108,7 +109,7 @@ function TreeNode({ node, selectedLanguage, depth = 0, onFileClick }) {
       title={node.name}
     >
       <span className="tree-icon">{fileIcon}</span>
-      <span className="tree-label">{node.name}</span>
+      <span className="tree-label">{formatName(node.name)}</span>
     </Link>
   );
 }
@@ -194,7 +195,7 @@ export default function Sidebar({ isOpen, onClose, selectedLanguage, onLanguageS
           <button className="tree-folder-btn" style={{ paddingLeft: `${16 + depth * 14}px` }} onClick={() => setExpanded(!expanded)}>
             <span className="tree-caret">{expanded ? '▾' : '▸'}</span>
             <span className="tree-icon"><FolderIcon color="var(--violet)" /></span>
-            <span className="tree-label">{node.name}</span>
+            <span className="tree-label">{formatName(node.name)}</span>
           </button>
           {expanded && hasChildren && (
             <div className="tree-children">
@@ -210,13 +211,18 @@ export default function Sidebar({ isOpen, onClose, selectedLanguage, onLanguageS
     return (
       <Link to={to} className={`tree-file ${active ? 'active' : ''}`} style={{ paddingLeft: `${16 + depth * 14}px` }} onClick={handleItemClick}>
         {getFileIcon(node.ext, node.name)}
-        <span className="tree-label">{node.name}</span>
+        <span className="tree-label">{formatName(node.name)}</span>
       </Link>
     );
   };
     return (
-      <aside className={`sidebar ${isOpen ? 'active' : 'mini'}`}>
-        <button className="sidebar-close" onClick={onClose}>×</button>
+      <aside className={`sidebar ${isOpen ? 'active' : ''}`}>
+        <button className="sidebar-close" onClick={onClose}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
 
         {/* Language Selector */}
         <div className="sidebar-section">

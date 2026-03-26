@@ -13,7 +13,7 @@ const languageMeta = {
   php: { icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/php/php-original.svg', color: '#777bb4' },
   ruby: { icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/ruby/ruby-original.svg', color: '#701516' },
   sql: { icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg', color: '#e38c00' },
-  batchfile: { icon: '⌨️', color: '#4d4d4d' }, // Fallback for batch
+  batchfile: { icon: '⌨️', color: '#4d4d4d' },
   powershell: { icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/powershell/powershell-original.svg', color: '#012456' },
   'q#': { icon: '⚛️', color: '#0078d4' },
   r: { icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/r/r-original.svg', color: '#276dc3' },
@@ -24,31 +24,46 @@ const languageMeta = {
 export default function LanguageSelectPage({ onLanguageSelect }) {
   const [languages, setLanguages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hoveredLanguage, setHoveredLanguage] = useState(null);
+  const [selectedLanguage, setSelectedLanguage] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/documents/languages`)
-      .then(res => res.json())
-      .then(data => {
-        setLanguages(data.languages || []);
-      })
-      .catch(err => {
-        console.error('Error loading languages:', err);
-        setLanguages([]);
-      })
-      .finally(() => setLoading(false));
+    const timer = setTimeout(() => {
+      fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/documents/languages`)
+        .then(res => res.json())
+        .then(data => {
+          setLanguages(data.languages || []);
+        })
+        .catch(err => {
+          console.error('Error loading languages:', err);
+          setLanguages([]);
+        })
+        .finally(() => setLoading(false));
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const handleLanguageSelect = (language) => {
-    onLanguageSelect(language);
-    navigate('/');
+    setSelectedLanguage(language);
+    
+    setTimeout(() => {
+      onLanguageSelect(language);
+      navigate('/');
+    }, 300);
   };
 
   if (loading) {
     return (
-      <div className="loading">
-        <div className="spinner" />
-        <p>Decoding available languages…</p>
+      <div className="language-select-page-wrapper">
+        <div className="loading">
+          <div className="spinner-container">
+            <div className="spinner" />
+            <div className="spinner-inner" />
+          </div>
+          <p>Discovering available languages…</p>
+        </div>
       </div>
     );
   }
@@ -82,17 +97,23 @@ export default function LanguageSelectPage({ onLanguageSelect }) {
           {languages.map((language, i) => {
             const meta = languageMeta[language.toLowerCase()] || { icon: '💻', color: '#64748b' };
             const rgba = meta.color.startsWith('#') ? hexToRgba(meta.color, 0.2) : 'rgba(255,255,255,0.1)';
+            const isHovered = hoveredLanguage === language;
+            const isSelected = selectedLanguage === language;
             
             return (
               <div
                 key={language}
                 onClick={() => handleLanguageSelect(language)}
-                className={`lang-card fade-up`}
+                className={`lang-card fade-up ${isSelected ? 'selected' : ''}`}
                 style={{ 
                   '--lang-color': meta.color,
                   '--lang-color-alpha': rgba,
-                  animationDelay: `${i * 0.05}s`
+                  animationDelay: `${i * 0.1}s`,
+                  transform: isHovered ? 'translateY(-12px) scale(1.03)' : 'translateY(0) scale(1)',
+                  opacity: isSelected ? 0.8 : 1
                 }}
+                onMouseEnter={() => setHoveredLanguage(language)}
+                onMouseLeave={() => setHoveredLanguage(null)}
                 onMouseMove={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
                   const x = e.clientX - rect.left;
@@ -101,15 +122,26 @@ export default function LanguageSelectPage({ onLanguageSelect }) {
                   e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
                 }}
               >
-                <div className="lang-icon-wrapper">
+                <div className="lang-icon-wrapper" style={{
+                  transform: isHovered ? 'scale(1.15) rotate(8deg)' : 'scale(1) rotate(0deg)'
+                }}>
                   {meta.icon.startsWith('http') ? (
                     <img src={meta.icon} alt={language} />
                   ) : (
                     <span style={{ fontSize: '2.5rem' }}>{meta.icon}</span>
                   )}
                 </div>
-                <span className="lang-name">{language}</span>
-                <span className="lang-explorer">Explore Docs →</span>
+                <span className="lang-name" style={{
+                  transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
+                  color: isHovered ? meta.color : '#fff'
+                }}>{language}</span>
+                <span className="lang-explorer" style={{
+                  opacity: isHovered ? 1 : 0,
+                  transform: isHovered ? 'translateY(0)' : 'translateY(10px)',
+                  color: isHovered ? meta.color : 'var(--txt-3)'
+                }}>
+                  {isSelected ? 'Loading...' : 'Explore Docs →'}
+                </span>
               </div>
             );
           })}
