@@ -180,6 +180,15 @@ export const getLanguages = async () => {
   }
 };
 
+export const runPythonCode = async (code, stdin = '') => {
+  try {
+    const response = await api.post('/documents/run-python', { code, stdin });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Utility function to clear cache
 export const clearCache = () => {
   cache.clear();

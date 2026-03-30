@@ -1,0 +1,293 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   IDE.css  —  PolyCode inline IDE styles
+   Split layout: code LEFT ▌ output RIGHT
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Enhanced code block wrapper ── */
+
+.code-block.ide-enhanced {
+  border-radius: var(--radius-sm, 10px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #0b0b14;
+  transition: border-color 0.2s;
+}
+
+.code-block.ide-enhanced:hover {
+  border-color: rgba(167, 139, 250, 0.2);
+}
+
+/* ── Header ── */
+
+.ide-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.ide-btn {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 5px;
+  padding: 3px 9px;
+  font-size: 0.63rem;
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.ide-btn:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Edit toggle — active state */
+.ide-btn.active {
+  background: rgba(167, 139, 250, 0.15);
+  color: #a78bfa;
+  border-color: rgba(167, 139, 250, 0.4);
+}
+
+/* Run button */
+.ide-btn.run-btn {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.ide-btn.run-btn:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.22);
+  color: #fff;
+  border-color: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+
+.ide-btn.run-btn:disabled,
+.ide-btn.running {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+  cursor: not-allowed;
+}
+
+/* Server-side warning button */
+.ide-btn.server-btn {
+  background: rgba(245, 158, 11, 0.08);
+  color: rgba(245, 158, 11, 0.6);
+  border-color: rgba(245, 158, 11, 0.2);
+  cursor: default;
+}
+
+.ide-btn.server-btn:hover {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+/* ── Split layout wrapper ── */
+
+.ide-split-layout {
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+}
+
+.ide-code-panel {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+
+.ide-stdin-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: #0a0a12;
+}
+
+.ide-stdin-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.ide-stdin {
+  width: 100%;
+  min-height: 52px;
+  resize: vertical;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.35);
+  color: #c9d1d9;
+  padding: 8px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
+.ide-stdin:focus {
+  outline: none;
+  border-color: #a78bfa;
+}
+
+/* When there IS output, add a visual divider */
+.ide-split-layout .ide-code-panel+.ide-output-panel {
+  border-left: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* ── Output panel (RIGHT side) ── */
+
+.ide-output-panel {
+  width: 42%;
+  min-width: 220px;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  background: #07070e;
+  flex-shrink: 0;
+}
+
+.ide-output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: #09090f;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.ide-clear-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.25);
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  transition: color 0.15s;
+  padding: 0;
+}
+
+.ide-clear-btn:hover {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ide-output-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 16px;
+  max-height: 320px;
+}
+
+.ide-output-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ide-output-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ide-output-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.ide-out-line {
+  margin: 0 0 2px;
+  padding: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+.ide-out-line.stdout {
+  color: #a8c0cc;
+}
+
+.ide-out-line.stderr {
+  color: #f87171;
+}
+
+/* ── Preview iframe ── */
+
+.ide-preview-iframe {
+  display: block;
+  width: 100%;
+  flex: 1;
+  min-height: 240px;
+  border: none;
+  background: #fff;
+}
+
+/* ── Editable textarea ── */
+
+.ide-editor-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.ide-textarea {
+  display: block;
+  width: 100%;
+  min-height: 200px;
+  background: transparent;
+  color: #c9d1d9;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.845rem;
+  line-height: 1.75;
+  padding: 20px 20px 20px 60px;
+  /* match line-number gutter */
+  border: none;
+  outline: none;
+  resize: vertical;
+  tab-size: 2;
+  caret-color: #a78bfa;
+}
+
+.ide-textarea:focus {
+  background: rgba(167, 139, 250, 0.03);
+}
+
+/* ── Edit hint bar ── */
+
+.ide-edit-hint {
+  padding: 5px 16px;
+  background: rgba(167, 139, 250, 0.06);
+  border-top: 1px solid rgba(167, 139, 250, 0.12);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.58rem;
+  color: rgba(167, 139, 250, 0.5);
+  letter-spacing: 0.06em;
+  text-align: right;
+}
+
+/* ── Responsive: stack vertically on small screens ── */
+
+@media (max-width: 800px) {
+  .ide-split-layout {
+    flex-direction: column;
+  }
+
+  .ide-output-panel {
+    width: 100%;
+    max-width: 100%;
+    border-left: none !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+  }
+}
