@@ -26,94 +26,6 @@ const DocIcon = ({ color = 'currentColor' }) => (
   </svg>
 );
 
-// Recursive tree node component
-function TreeNode({ node, selectedLanguage, depth = 0, onFileClick }) {
-  const [expanded, setExpanded] = useState(depth === 0);
-  const location = useLocation();
-
-  if (node.type === 'folder') {
-    const hasChildren = node.children && node.children.length > 0;
-    return (
-      <div className="tree-folder">
-        <button
-          className="tree-folder-btn"
-          style={{ paddingLeft: `${16 + depth * 14}px` }}
-          onClick={() => setExpanded(e => !e)}
-          title={node.name}
-        >
-          <span className="tree-caret">{expanded ? '▾' : '▸'}</span>
-          <span className="tree-icon"><FolderIcon color="var(--violet)" /></span>
-          <span className="tree-label">{formatName(node.name)}</span>
-        </button>
-        {expanded && hasChildren && (
-          <div className="tree-children">
-            {node.children.map((child, i) => (
-              <TreeNode
-                key={i}
-                node={child}
-                selectedLanguage={selectedLanguage}
-                depth={depth + 1}
-                onFileClick={onFileClick}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // File node
-  const filePath = node.path;
-  const to = `/doc/${filePath}${selectedLanguage ? `?language=${selectedLanguage}` : ''}`;
-  const isActive = location.pathname === `/doc/${filePath}`;
-  
-  // Specific icons for files
-  let fileIcon = '📄';
-  const fileName = node.name.toLowerCase();
-  const ext = node.ext.toLowerCase();
-
-  if (fileName.startsWith('readme')) {
-    fileIcon = '🏠';
-  } else if (ext === '.md') {
-    fileIcon = '📝';
-  } else if (ext === '.py') {
-    fileIcon = '🐍';
-  } else if (ext === '.go') {
-    fileIcon = '🐹';
-  } else if (ext === '.js' || ext === '.jsx' || ext === '.ts' || ext === '.tsx') {
-    fileIcon = '📜';
-  } else if (ext === '.java') {
-    fileIcon = '☕';
-  } else if (ext === '.c') {
-    fileIcon = '🔵';
-  } else if (ext === '.cpp') {
-    fileIcon = '💠';
-  } else if (ext === '.rs') {
-    fileIcon = '🦀';
-  } else if (ext === '.html') {
-    fileIcon = '🌐';
-  } else if (ext === '.css') {
-    fileIcon = '🎨';
-  } else if (ext === '.sql') {
-    fileIcon = '🛢️';
-  } else if (ext === '.sh' || ext === '.bash') {
-    fileIcon = '💻';
-  }
-
-  return (
-    <Link
-      to={to}
-      className={`tree-file ${isActive ? 'active' : ''}`}
-      style={{ paddingLeft: `${16 + depth * 14}px` }}
-      onClick={onFileClick}
-      title={node.name}
-    >
-      <span className="tree-icon">{fileIcon}</span>
-      <span className="tree-label">{formatName(node.name)}</span>
-    </Link>
-  );
-}
-
 const languageLogos = {
   javascript: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg',
   python: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg',
@@ -142,30 +54,29 @@ export default function Sidebar({ isOpen, onClose, selectedLanguage, onLanguageS
 
   useEffect(() => {
     const params = selectedLanguage ? { language: selectedLanguage } : {};
-    getStats(params).then(r => setStats(r.data)).catch(() => {});
-    getTree(params).then(r => setTree(r.data.tree || [])).catch(() => {});
-    getLanguages().then(r => setLanguages(r.data.languages || [])).catch(() => {});
+    getStats(params).then(r => setStats(r.data)).catch(() => { });
+    getTree(params).then(r => setTree(r.data.tree || [])).catch(() => { });
+    getLanguages().then(r => setLanguages(r.data.languages || [])).catch(() => { });
   }, [selectedLanguage]);
 
   const isActive = (p) => location.pathname === p;
 
+  // ── Auto-close on file click (works on all screen sizes) ──
   const handleItemClick = () => {
-    if (window.innerWidth <= 900) onClose();
+    onClose();
   };
 
   const handleSelectLanguage = (lang) => {
     setShowLangMenu(false);
     onLanguageSelect(lang);
     navigate('/hub');
+    onClose(); // close after language switch too
   };
 
   const currentLogo = languageLogos[selectedLanguage?.toLowerCase()];
 
   const getFileIcon = (ext, fileName) => {
-    const fn = fileName.toLowerCase();
     const e = ext.toLowerCase();
-
-    // Official logos for code files
     if (e === '.py') return <img src={languageLogos.python} alt="" className="tree-logo-icon" />;
     if (e === '.go') return <img src={languageLogos.go} alt="" className="tree-logo-icon" />;
     if (e === '.js' || e === '.jsx') return <img src={languageLogos.javascript} alt="" className="tree-logo-icon" />;
@@ -176,9 +87,7 @@ export default function Sidebar({ isOpen, onClose, selectedLanguage, onLanguageS
     if (e === '.php') return <img src={languageLogos.php} alt="" className="tree-logo-icon" />;
     if (e === '.rb') return <img src={languageLogos.ruby} alt="" className="tree-logo-icon" />;
     if (e === '.sql') return <img src={languageLogos.sql} alt="" className="tree-logo-icon" />;
-    if (e === '.cs' || e === '.csharp') return <img src={languageLogos.csharp} alt="" className="tree-logo-icon" />;
-
-    // Themed icons for other files
+    if (e === '.cs') return <img src={languageLogos.csharp} alt="" className="tree-logo-icon" />;
     if (e === '.md') return <span className="tree-icon"><DocIcon color="var(--cyan)" /></span>;
     if (e === '.html') return <span className="tree-icon">🌐</span>;
     if (e === '.css') return <span className="tree-icon">🎨</span>;
@@ -187,19 +96,25 @@ export default function Sidebar({ isOpen, onClose, selectedLanguage, onLanguageS
 
   const SidebarTreeNode = ({ node, depth = 0 }) => {
     const [expanded, setExpanded] = useState(depth === 0);
-    
+
     if (node.type === 'folder') {
       const hasChildren = node.children && node.children.length > 0;
       return (
         <div className="tree-folder">
-          <button className="tree-folder-btn" style={{ paddingLeft: `${16 + depth * 14}px` }} onClick={() => setExpanded(!expanded)}>
+          <button
+            className="tree-folder-btn"
+            style={{ paddingLeft: `${16 + depth * 14}px` }}
+            onClick={() => setExpanded(e => !e)}
+          >
             <span className="tree-caret">{expanded ? '▾' : '▸'}</span>
             <span className="tree-icon"><FolderIcon color="var(--violet)" /></span>
             <span className="tree-label">{formatName(node.name)}</span>
           </button>
           {expanded && hasChildren && (
             <div className="tree-children">
-              {node.children.map((child, i) => <SidebarTreeNode key={i} node={child} depth={depth + 1} />)}
+              {node.children.map((child, i) => (
+                <SidebarTreeNode key={i} node={child} depth={depth + 1} />
+              ))}
             </div>
           )}
         </div>
@@ -208,92 +123,94 @@ export default function Sidebar({ isOpen, onClose, selectedLanguage, onLanguageS
 
     const to = `/doc/${node.path}${selectedLanguage ? `?language=${selectedLanguage}` : ''}`;
     const active = location.pathname === `/doc/${node.path}`;
+
     return (
-      <Link to={to} className={`tree-file ${active ? 'active' : ''}`} style={{ paddingLeft: `${16 + depth * 14}px` }} onClick={handleItemClick}>
+      <Link
+        to={to}
+        className={`tree-file ${active ? 'active' : ''}`}
+        style={{ paddingLeft: `${16 + depth * 14}px` }}
+        onClick={handleItemClick}   // ← closes sidebar on any file click
+      >
         {getFileIcon(node.ext, node.name)}
         <span className="tree-label">{formatName(node.name)}</span>
       </Link>
     );
   };
-    return (
-      <aside className={`sidebar ${isOpen ? 'active' : ''}`}>
-        <button className="sidebar-close" onClick={onClose}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
 
-        {/* Language Selector */}
-        <div className="sidebar-section">
-          <div className="sidebar-section-title">Current Stack</div>
-          <div className="sidebar-language-box">
-            <button 
-              className="language-display-btn" 
-              onClick={() => setShowLangMenu(!showLangMenu)}
-            >
-              <div className="current-lang-info">
-                {currentLogo && (
-                  <img src={currentLogo} alt="" className="lang-icon-mini" />
-                )}
-                <span className="current-language-name">{selectedLanguage}</span>
-              </div>
-              <span className="chevron">{showLangMenu ? '▴' : '▾'}</span>
-            </button>
-            
-            {showLangMenu && (
-              <div className="language-dropdown-menu">
-                {languages.map(lang => {
-                  const logo = languageLogos[lang.toLowerCase()];
-                  return (
-                    <button 
-                      key={lang} 
-                      className={`lang-option ${lang === selectedLanguage ? 'active' : ''}`}
-                      onClick={() => handleSelectLanguage(lang)}
-                    >
-                      {logo && <img src={logo} alt="" className="lang-icon-tiny" />}
-                      <span>{lang}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+  return (
+    <aside className={`sidebar ${isOpen ? 'active' : ''}`}>
+      {/* Close button */}
+      <button className="sidebar-close" onClick={onClose}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      {/* Language selector */}
+      <div className="sidebar-section">
+        <div className="sidebar-section-title">Current Stack</div>
+        <div className="sidebar-language-box">
+          <button className="language-display-btn" onClick={() => setShowLangMenu(!showLangMenu)}>
+            <div className="current-lang-info">
+              {currentLogo && <img src={currentLogo} alt="" className="lang-icon-mini" />}
+              <span className="current-language-name">{selectedLanguage}</span>
+            </div>
+            <span className="chevron">{showLangMenu ? '▴' : '▾'}</span>
+          </button>
+
+          {showLangMenu && (
+            <div className="language-dropdown-menu">
+              {languages.map(lang => {
+                const logo = languageLogos[lang.toLowerCase()];
+                return (
+                  <button
+                    key={lang}
+                    className={`lang-option ${lang === selectedLanguage ? 'active' : ''}`}
+                    onClick={() => handleSelectLanguage(lang)}
+                  >
+                    {logo && <img src={logo} alt="" className="lang-icon-tiny" />}
+                    <span>{lang}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
+      </div>
 
-        <div className="sidebar-sep" />
+      <div className="sidebar-sep" />
 
-        {/* Quick Nav */}
-        <div className="sidebar-section">
-          <div className="sidebar-section-title">Navigate</div>
-          <Link to="/hub" className={`sidebar-item ${isActive('/hub') ? 'active' : ''}`} onClick={handleItemClick}>
-            <span className="icon">⌂</span>
-            <span className="sidebar-text">Home</span>
-          </Link>
-          <Link to="/search" className={`sidebar-item ${isActive('/search') ? 'active' : ''}`} onClick={handleItemClick}>
-            <span className="icon">⌕</span>
-            <span className="sidebar-text">Search</span>
-          </Link>
+      {/* Quick nav */}
+      <div className="sidebar-section">
+        <div className="sidebar-section-title">Navigate</div>
+        <Link to="/hub" className={`sidebar-item ${isActive('/hub') ? 'active' : ''}`} onClick={handleItemClick}>
+          <span className="icon">⌂</span>
+          <span className="sidebar-text">Home</span>
+        </Link>
+        <Link to="/search" className={`sidebar-item ${isActive('/search') ? 'active' : ''}`} onClick={handleItemClick}>
+          <span className="icon">⌕</span>
+          <span className="sidebar-text">Search</span>
+        </Link>
+        {/* Playground shortcut inside sidebar */}
+        <Link to="/playground" className={`sidebar-item ${isActive('/playground') ? 'active' : ''}`} onClick={handleItemClick}>
+          <span className="icon">▶</span>
+          <span className="sidebar-text">Playground</span>
+        </Link>
+      </div>
+
+      <div className="sidebar-sep" />
+
+      {/* File tree */}
+      <div className="sidebar-section">
+        <div className="sidebar-section-title">Files</div>
+        <div className="sidebar-tree">
+          {tree.length === 0 && <div className="tree-empty">No files found</div>}
+          {tree.map((node, i) => (
+            <SidebarTreeNode key={i} node={node} depth={0} />
+          ))}
         </div>
-
-        <div className="sidebar-sep" />
-
-        {/* File Tree */}
-        <div className="sidebar-section">
-          <div className="sidebar-section-title">Files</div>
-          <div className="sidebar-tree">
-            {tree.length === 0 && (
-              <div className="tree-empty">No files found</div>
-            )}
-            {tree.map((node, i) => (
-              <SidebarTreeNode
-                key={i}
-                node={node}
-                depth={0}
-              />
-            ))}
-          </div>
-        </div>
-      </aside>
-    );
+      </div>
+    </aside>
+  );
 }

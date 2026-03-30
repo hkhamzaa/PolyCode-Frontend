@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 
 export default function Navbar({ toggleSidebar }) {
   const [query, setQuery] = useState('');
@@ -24,18 +24,18 @@ export default function Navbar({ toggleSidebar }) {
     if (query.trim()) navigate(`/search?q=${encodeURIComponent(query.trim())}`);
   };
 
-  const isActive = (path) =>
-    location.pathname === path ? 'active' : '';
+  const isActive = (path) => location.pathname === path ? 'active' : '';
 
   return (
     <nav className="navbar">
-      <button className="mobile-menu-toggle" onClick={toggleSidebar}>
+      {/* ── Hamburger / sidebar toggle ── */}
+      <button className="mobile-menu-toggle" onClick={toggleSidebar} aria-label="Toggle sidebar">
         <span></span>
         <span></span>
         <span></span>
       </button>
 
-      {/* Brand */}
+      {/* ── Brand ── */}
       <Link to="/hub" className="navbar-brand">
         <div className="logo">
           <span style={{ position: 'relative', zIndex: 1 }}>PC</span>
@@ -46,7 +46,7 @@ export default function Navbar({ toggleSidebar }) {
         </div>
       </Link>
 
-      {/* Search */}
+      {/* ── Search ── */}
       <form className="navbar-search" onSubmit={handleSearch}>
         <span className="search-icon-left">⌕</span>
         <input
@@ -60,11 +60,20 @@ export default function Navbar({ toggleSidebar }) {
         <span className="search-kbd">⌘K</span>
       </form>
 
-      {/* Links */}
+      {/* ── Links ── */}
       <div className="navbar-links">
         <Link to="/hub" className={isActive('/hub')}>Home</Link>
         <Link to="/search" className={isActive('/search')}>Search</Link>
+        {/* Playground link */}
+        <NavLink
+          to="/playground"
+          className={({ isActive: a }) =>
+            `navbar-playground-link ${a ? 'active' : ''}`
+          }
+        >
+          ▶ Playground
+        </NavLink>
       </div>
     </nav>
   );
-}
+}
