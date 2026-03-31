@@ -264,41 +264,6 @@
   overflow: hidden;
 }
 
-.pg-stdin-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: #0b0b14;
-}
-
-.pg-stdin-label {
-  font-size: 0.6rem;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.45);
-  text-transform: uppercase;
-}
-
-.pg-stdin {
-  width: 100%;
-  min-height: 56px;
-  resize: vertical;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: #09090f;
-  color: #c9d1d9;
-  padding: 8px;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.74rem;
-  line-height: 1.4;
-}
-
-.pg-stdin:focus {
-  outline: none;
-  border-color: #a78bfa;
-}
-
 /* ── Output panel ── */
 
 .pg-output-tabs {
