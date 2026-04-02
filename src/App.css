@@ -2807,3 +2807,326 @@ body {
   font-size: 0.85rem;
   opacity: 0.7;
 }
+
+/* === Universal IDE Styles === */
+.universal-ide {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--ink-2);
+  margin-top: 12px;
+  overflow: hidden;
+  font-family: var(--font-mono);
+}
+
+.ide-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--ink-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.toolbar-left, .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: rgba(56, 139, 253, 0.1);
+  border: 1px solid rgba(56, 139, 253, 0.3);
+  border-radius: 6px;
+}
+
+.lang-icon {
+  font-size: 14px;
+}
+
+.lang-name {
+  font-weight: 600;
+  color: var(--txt-1);
+}
+
+.lang-type {
+  font-size: 10px;
+  color: var(--txt-3);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.btn-run, .btn-reset, .btn-analyze, .btn-close {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.btn-run {
+  background: var(--success, #238636);
+  color: white;
+}
+
+.btn-run:hover:not(:disabled) {
+  background: #2ea043;
+}
+
+.btn-run:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-reset {
+  background: var(--ink-2);
+  color: var(--txt-2);
+  border: 1px solid var(--border);
+}
+
+.btn-reset:hover {
+  background: var(--ink-1);
+}
+
+.btn-analyze {
+  background: rgba(56, 139, 253, 0.1);
+  color: #388bfb;
+  border: 1px solid rgba(56, 139, 253, 0.3);
+}
+
+.btn-analyze:hover:not(:disabled) {
+  background: rgba(56, 139, 253, 0.2);
+}
+
+.btn-analyze:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-close {
+  background: transparent;
+  color: var(--txt-3);
+  padding: 4px 8px;
+}
+
+.btn-close:hover {
+  background: rgba(245, 108, 108, 0.1);
+  color: #f56c6c;
+}
+
+.spinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.analysis-panel {
+  background: var(--ink-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.analysis-header {
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--txt-2);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+.analysis-content {
+  padding: 12px 16px;
+}
+
+.analysis-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.analysis-label {
+  color: var(--txt-3);
+}
+
+.analysis-value {
+  color: var(--txt-1);
+  font-weight: 600;
+}
+
+.analysis-value.success {
+  color: var(--success, #238636);
+}
+
+.analysis-value.warning {
+  color: var(--warning, #f59e0b);
+}
+
+.analysis-message {
+  margin-top: 12px;
+  padding: 8px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--txt-2);
+}
+
+.analysis-config {
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--txt-2);
+}
+
+.analysis-config ul {
+  margin: 4px 0;
+  padding-left: 16px;
+}
+
+.editor-container {
+  border-bottom: 1px solid var(--border);
+}
+
+.output-container {
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--ink-2);
+}
+
+.output-success, .output-error, .output-warning, .output-info {
+  margin: 0;
+  border-radius: 0;
+}
+
+.output-header-success, .output-header-error, .output-header-warning, .output-header-info {
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.output-header-success {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
+  color: var(--success, #22c55e);
+  border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.output-header-error {
+  background: linear-gradient(135deg, rgba(245, 108, 108, 0.15), rgba(245, 108, 108, 0.05));
+  color: var(--error, #f56c6c);
+  border-bottom: 1px solid rgba(245, 108, 108, 0.2);
+}
+
+.output-header-warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+  color: var(--warning, #f59e0b);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.output-header-info {
+  background: linear-gradient(135deg, rgba(56, 139, 253, 0.15), rgba(56, 139, 253, 0.05));
+  color: #388bfb;
+  border-bottom: 1px solid rgba(56, 139, 253, 0.2);
+}
+
+.output-content, .error-content {
+  margin: 0;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  background: #0d1117;
+  color: #7ee787;
+}
+
+.error-content {
+  color: #f56c6c;
+}
+
+.warning-content, .info-content {
+  padding: 12px 16px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.compiler-help {
+  margin-top: 12px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.install-command {
+  margin: 4px 0;
+  padding: 6px 8px;
+  background: #000;
+  color: #0ff;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  overflow-x: auto;
+}
+
+.warning-content p, .info-content p {
+  margin: 0 0 8px 0;
+}
+
+.warning-content p:last-child, .info-content p:last-child {
+  margin-bottom: 0;
+}
+
+.warning-actions, .info-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.btn-convert, .btn-force-run {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-convert {
+  background: var(--warning, #f59e0b);
+  color: white;
+}
+
+.btn-force-run {
+  background: var(--ink-2);
+  color: var(--txt-2);
+  border: 1px solid var(--border);
+}
+
+.btn-convert:hover {
+  background: #d97706;
+}
+
+.btn-force-run:hover {
+  background: var(--ink-1);
+}

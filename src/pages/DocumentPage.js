@@ -29,7 +29,7 @@ export default function DocumentPage({ selectedLanguage }) {
         </div>
         <p>initialising hub…</p>
       </div>
-      <p>decoding file structure…</p>
+      <p>decoding file structure....</p>
     </div>
   );
   if (error) return <div className="error-box">⚠ {error}</div>;
