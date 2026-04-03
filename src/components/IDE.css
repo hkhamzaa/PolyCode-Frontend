@@ -103,41 +103,6 @@
   overflow: auto;
 }
 
-.ide-stdin-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: #0a0a12;
-}
-
-.ide-stdin-label {
-  font-size: 0.58rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.42);
-}
-
-.ide-stdin {
-  width: 100%;
-  min-height: 52px;
-  resize: vertical;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.35);
-  color: #c9d1d9;
-  padding: 8px;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.74rem;
-  line-height: 1.4;
-}
-
-.ide-stdin:focus {
-  outline: none;
-  border-color: #a78bfa;
-}
-
 /* When there IS output, add a visual divider */
 .ide-split-layout .ide-code-panel+.ide-output-panel {
   border-left: 1px solid rgba(255, 255, 255, 0.07);

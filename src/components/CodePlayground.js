@@ -26,7 +26,6 @@ export default function CodePlayground({ initialCode, initialLanguage = 'javascr
   const [code, setCode] = useState(initialCode || getStarter(initialLanguage));
   const [output, setOutput] = useState([]);
   const [previewHTML, setPreview] = useState(null);
-  const [stdin, setStdin] = useState('');
   const [running, setRunning] = useState(false);
   const [fontSize, setFontSize] = useState(14);
   const [wordWrap, setWordWrap] = useState(false);
@@ -53,7 +52,7 @@ export default function CodePlayground({ initialCode, initialLanguage = 'javascr
 
     const t0 = performance.now();
     try {
-      const result = await executeCode(code, language, runPython, stdin);
+      const result = await executeCode(code, language, runPython);
       const ms = ((performance.now() - t0) / 1000).toFixed(2);
 
       if (result.previewHTML) {
@@ -73,7 +72,7 @@ export default function CodePlayground({ initialCode, initialLanguage = 'javascr
     } finally {
       setRunning(false);
     }
-  }, [code, language, running, runPython, stdin]);
+  }, [code, language, running, runPython]);
 
   const handleEditorKeyDown = useCallback((e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); handleRun(); }
@@ -151,18 +150,6 @@ export default function CodePlayground({ initialCode, initialLanguage = 'javascr
             <span className="pg-pane-title">{langInfo.icon} {langInfo.label}</span>
             <span className="pg-pane-hint">Ctrl+Enter to run</span>
           </div>
-          {langInfo.engine === 'py' && (
-            <div className="pg-stdin-wrap">
-              <label htmlFor="pg-stdin" className="pg-stdin-label">stdin (one line per input)</label>
-              <textarea
-                id="pg-stdin"
-                className="pg-stdin"
-                value={stdin}
-                onChange={(e) => setStdin(e.target.value)}
-                placeholder={'Example:\nAlice\n42'}
-              />
-            </div>
-          )}
           <div className="pg-editor-body">
             <Editor
               height="100%"

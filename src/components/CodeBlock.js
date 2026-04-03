@@ -28,7 +28,6 @@ export default function CodeBlock({ code: initialCode, language = 'python', file
   const [running, setRunning] = useState(false);
   const [output, setOutput] = useState(null);   // null = hidden
   const [previewHTML, setPreview] = useState(null);
-  const [stdin, setStdin] = useState('');
   const textareaRef = useRef(null);
 
   const { runPython } = usePlayground();
@@ -80,7 +79,7 @@ export default function CodeBlock({ code: initialCode, language = 'python', file
     setPreview(null);
 
     try {
-      const result = await executeCode(code, language, runPython, stdin);
+        const result = await executeCode(code, language, runPython);
       if (result.previewHTML) {
         setPreview(result.previewHTML);
       } else {
@@ -96,7 +95,7 @@ export default function CodeBlock({ code: initialCode, language = 'python', file
     } finally {
       setRunning(false);
     }
-  }, [code, language, runPython, running, stdin]);
+  }, [code, language, runPython, running]);
 
   const handleClear = () => { setOutput(null); setPreview(null); };
 
@@ -168,18 +167,6 @@ export default function CodeBlock({ code: initialCode, language = 'python', file
       <div className="ide-split-layout">
         {/* Code panel */}
         <div className="ide-code-panel">
-          {langInfo.engine === 'py' && (
-            <div className="ide-stdin-wrap">
-              <label htmlFor={`stdin-${filename || 'code'}`} className="ide-stdin-label">stdin (one line per input)</label>
-              <textarea
-                id={`stdin-${filename || 'code'}`}
-                className="ide-stdin"
-                value={stdin}
-                onChange={e => setStdin(e.target.value)}
-                placeholder={'Example:\nAlice\n42'}
-              />
-            </div>
-          )}
           {editMode ? (
             <div className="ide-editor-wrapper">
               <textarea
