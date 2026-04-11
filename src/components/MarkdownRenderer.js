@@ -3,14 +3,51 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import CodeBlock from './CodeBlock';
 
+function normalizeDocLanguage(lang = '') {
+  const key = String(lang).toLowerCase().trim();
+  const aliases = {
+    'c++': 'cpp',
+    cpp: 'cpp',
+    cc: 'cpp',
+    cxx: 'cpp',
+    'c#': 'csharp',
+    cs: 'csharp',
+    shell: 'bash',
+    sh: 'bash',
+    ps1: 'powershell',
+    bat: 'batch',
+    batchfile: 'batch',
+    md: 'markdown',
+    py: 'python',
+    js: 'javascript',
+    ts: 'typescript',
+  };
+  return aliases[key] || key || 'python';
+}
+
+function extensionFromLanguage(lang) {
+  const map = {
+    python: 'py',
+    javascript: 'js',
+    typescript: 'ts',
+    csharp: 'cs',
+    cpp: 'cpp',
+    powershell: 'ps1',
+    batch: 'bat',
+    markdown: 'md',
+  };
+  return map[lang] || lang;
+}
+
 export default function MarkdownRenderer({ content, fileType, relatedCode, title }) {
   if (fileType !== 'markdown' && fileType !== 'md') {
+    const normalizedFileType = normalizeDocLanguage(fileType);
     return (
       <div className="doc-body">
         <CodeBlock
-          language={fileType === 'py' ? 'python' : fileType}
+          language={normalizedFileType}
           code={content}
-          filename={title && fileType ? `${title}.${fileType === 'python' ? 'py' : fileType}` : title}
+          filename={title && normalizedFileType ? `${title}.${extensionFromLanguage(normalizedFileType)}` : title}
         />
       </div>
     );
@@ -22,8 +59,8 @@ export default function MarkdownRenderer({ content, fileType, relatedCode, title
         remarkPlugins={[remarkGfm]}
         components={{
           code({ node, inline, className, children, ...props }) {
-            const match = /language-(\w+)/.exec(className || '');
-            const lang = match ? match[1] : 'python';
+            const match = /language-([a-zA-Z0-9#+-]+)/.exec(className || '');
+            const lang = normalizeDocLanguage(match ? match[1] : 'python');
             const codeStr = String(children).replace(/\n$/, '');
 
             if (!inline && (match || codeStr.length > 60)) {
@@ -60,20 +97,27 @@ export default function MarkdownRenderer({ content, fileType, relatedCode, title
           </div>
 
           {relatedCode.map((codeDoc, index) => (
-            <div key={index} className="related-code-item" style={{ marginBottom: '32px' }}>
-              <div style={{
-                background: 'rgba(5, 8, 16, 0.5)',
-                border: '1px solid var(--border)',
-                padding: '0',
-                borderRadius: 'var(--radius)'
-              }}>
-                <CodeBlock
-                  language="python"
-                  code={codeDoc.content}
-                  filename={`${codeDoc.title}.py`}
-                />
-              </div>
-            </div>
+            (() => {
+              const rawLang = codeDoc.fileType || codeDoc.language || 'python';
+              const codeLang = normalizeDocLanguage(rawLang);
+              const ext = extensionFromLanguage(codeLang);
+              return (
+                <div key={index} className="related-code-item" style={{ marginBottom: '32px' }}>
+                  <div style={{
+                    background: 'rgba(5, 8, 16, 0.5)',
+                    border: '1px solid var(--border)',
+                    padding: '0',
+                    borderRadius: 'var(--radius)'
+                  }}>
+                    <CodeBlock
+                      language={codeLang}
+                      code={codeDoc.content}
+                      filename={`${codeDoc.title}.${ext}`}
+                    />
+                  </div>
+                </div>
+              );
+            })()
           ))}
         </div>
       )}

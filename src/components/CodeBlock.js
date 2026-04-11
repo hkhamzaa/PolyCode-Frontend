@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { usePlayground } from '../context/PlaygroundContext';
 import { executeCode, resolveEngine } from '../utils/BrowserExecutor';
 import './IDE.css';
 
@@ -30,10 +29,7 @@ export default function CodeBlock({ code: initialCode, language = 'python', file
   const [previewHTML, setPreview] = useState(null);
   const textareaRef = useRef(null);
 
-  const { runPython } = usePlayground();
-
   const langInfo = resolveEngine(language);
-  const canRun = langInfo.engine !== 'server';
   const hasOutput = output !== null || previewHTML !== null;
 
   const handleCopy = () => {
@@ -79,7 +75,7 @@ export default function CodeBlock({ code: initialCode, language = 'python', file
     setPreview(null);
 
     try {
-        const result = await executeCode(code, language, runPython);
+      const result = await executeCode(code, language);
       if (result.previewHTML) {
         setPreview(result.previewHTML);
       } else {
@@ -95,7 +91,7 @@ export default function CodeBlock({ code: initialCode, language = 'python', file
     } finally {
       setRunning(false);
     }
-  }, [code, language, runPython, running]);
+  }, [code, language, running]);
 
   const handleClear = () => { setOutput(null); setPreview(null); };
 
@@ -130,25 +126,19 @@ export default function CodeBlock({ code: initialCode, language = 'python', file
           )}
 
           {/* Run button */}
-          {canRun ? (
-            <button
-              className={`ide-btn run-btn ${running ? 'running' : ''}`}
-              onClick={handleRun}
-                disabled={running}
-              title={editMode ? 'Run (Ctrl+Enter)' : 'Run code'}
-            >
-              {running
-                ? '⟳ Running…'
-                : '▶ Run'}
-            </button>
-          ) : (
-            <button
-              className="ide-btn server-btn"
-              onClick={handleRun}
-              title="Needs server runtime"
-            >
-              ⚠ Server
-            </button>
+          <button
+            className={`ide-btn run-btn ${running ? 'running' : ''}`}
+            onClick={handleRun}
+            disabled={running}
+            title={editMode ? 'Run (Ctrl+Enter)' : 'Run code'}
+          >
+            {running ? '⟳ Running…' : '▶ Run'}
+          </button>
+
+          {langInfo.engine === 'server' && (
+            <span className="ide-runtime-pill" title="Runs in local simulation mode">
+              Local Sim
+            </span>
           )}
 
           {/* Copy */}

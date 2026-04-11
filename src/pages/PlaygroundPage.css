@@ -4,7 +4,7 @@
   display: flex;
   flex-direction: column;
   height: calc(100vh - 60px);
-  overflow: hidden;
+  overflow: auto;
 }
 
 .playground-page-header {
@@ -43,10 +43,50 @@
   color: rgba(255, 255, 255, 0.28);
 }
 
+.pph-current {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.52);
+  background: rgba(167, 139, 250, 0.08);
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  border-radius: 10px;
+  padding: 7px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pph-current strong {
+  color: #c4b5fd;
+  text-transform: capitalize;
+}
+
 .pph-pills {
   display: flex;
   gap: 5px;
   flex-wrap: wrap;
+}
+
+.pph-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pph-section {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.pph-section-title {
+  width: 92px;
+  flex-shrink: 0;
+  padding-top: 6px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.34);
 }
 
 .pph-pill {
@@ -88,8 +128,9 @@
 
 .playground-page-body {
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
   padding: 14px 24px 18px;
+  min-height: 0;
 }
 
 .playground-page-body .playground-root {
@@ -114,5 +155,15 @@
 
   .playground-page-header {
     padding: 12px 14px;
+  }
+
+  .pph-section {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .pph-section-title {
+    width: auto;
+    padding-top: 0;
   }
 }

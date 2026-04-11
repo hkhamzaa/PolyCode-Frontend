@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useRef, useState, useCallback } from 'react';
-import { runPythonCode } from '../utils/api';
 
 const PlaygroundContext = createContext(null);
 
@@ -43,21 +42,56 @@ sys.stderr = _Cap()
   }, [pyodideStatus]);
 
   const runPython = useCallback(async (code, stdin = '') => {
-    // Prefer server Python for full compatibility with project examples.
-    // Fallback to Pyodide when backend execution is unavailable.
-    try {
-      return await runPythonCode(code, stdin);
-    } catch (_) {
-      const py = await loadPyodide();
-      if (!py) throw new Error('Python runtime not available');
-      py.runPython('sys.stdout = _Cap()\nsys.stderr = _Cap()');
-      let error = null;
-      try { py.runPython(code); } catch (e) { error = e.message; }
-      const stdout = py.runPython('sys.stdout.getvalue()');
-      const stderr = py.runPython('sys.stderr.getvalue()');
-      return { stdout, stderr, error };
+    // Load Pyodide if not already loaded
+    if (!window.loadPyodide) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Failed to load Pyodide'));
+        document.head.appendChild(script);
+      });
     }
-  }, [loadPyodide]);
+    
+    // Initialize Pyodide if not already initialized
+    if (!pyodideRef.current) {
+      setPyodideStatus('loading');
+      try {
+        const pyodide = await window.loadPyodide({
+          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/',
+        });
+        pyodide.runPython(`
+import sys, io
+class _Cap(io.StringIO): pass
+sys.stdout = _Cap()
+sys.stderr = _Cap()
+        `);
+        pyodideRef.current = pyodide;
+        setPyodideStatus('ready');
+      } catch (e) {
+        setPyodideError(e.message);
+        setPyodideStatus('error');
+        throw new Error('Python runtime not available');
+      }
+    }
+    
+    const py = pyodideRef.current;
+    
+    // Reset stdout/stderr
+    py.runPython('sys.stdout = _Cap()\nsys.stderr = _Cap()');
+    
+    let error = null;
+    try {
+      py.runPython(code);
+    } catch (e) {
+      error = e.message;
+    }
+    
+    const stdout = py.runPython('sys.stdout.getvalue()');
+    const stderr = py.runPython('sys.stderr.getvalue()');
+    
+    return { stdout, stderr, error };
+  }, []);
 
   return (
     <PlaygroundContext.Provider value={{ pyodideStatus, pyodideError, loadPyodide, runPython }}>

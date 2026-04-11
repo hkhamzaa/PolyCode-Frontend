@@ -6,8 +6,9 @@
  *   JSON, Markdown, Lua (fengari), Brainfuck, Ruby (Opal), PHP (lite),
  *   Scheme/Lisp (BiwaScheme), Prolog (tau-prolog)
  *
- * Languages that need a server: C, C++, Java, Go, Rust, Kotlin, Swift,
- *   Bash, Batch, R, MATLAB, Perl, Scala, Dart — show a friendly message.
+ * Server-style languages:
+ *   C, C++, Java, Go, Rust, Kotlin, Swift, Bash, Batch, R, Perl, Scala, Dart, etc.
+ *   These run in a local browser simulation mode (no API/backend).
  */
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -31,19 +32,45 @@ function preview(html) { return { stdout: '', stderr: '', error: null, previewHT
 
 export function runJavaScript(code) {
   return new Promise((resolve) => {
+    // Check for import statements
+    if (/^\s*import\s+/m.test(code) || /^\s*export\s+/m.test(code)) {
+      resolve({
+        stdout: '',
+        stderr: [
+          '⚠️  Import/Export statements are not supported in browser mode.',
+          '',
+          '💡 What\'s happening?',
+          'This playground runs entirely in your browser without a build system.',
+          'ES6 modules (import/export) require bundlers like Webpack or Vite.',
+          '',
+          '✅ What you can do instead:',
+          '• Use built-in browser APIs (fetch, localStorage, etc.)',
+          '• Write standalone functions and classes',
+          '• Use CDN links in HTML for external libraries',
+          '• Try Python, SQL, or other browser-supported languages',
+          '',
+          '📝 Example:',
+          '❌ import React from "react";',
+          '✅ const element = <h1>Hello World</h1>; (JSX works!)',
+        ].join('\n'),
+        error: null,
+      });
+      return;
+    }
+
     const logs = [], errors = [];
     const html = `<!DOCTYPE html><html><body><script>
-      window.onerror = (m,s,l,c,e) => { parent.postMessage({type:'error',data:String(e||m)},'*'); };
+      window.onerror = (m,s,l,c,e) => { parent.postMessage({type:\'error\',data:String(e||m)},\'*\'); };
       const _s = (type,args) => parent.postMessage({type,data:args.map(a=>{
-        try{return typeof a==='object'?JSON.stringify(a,null,2):String(a);}catch(e){return String(a);}
-      }).join(' ')},'*');
-      console.log   = (...a) => _s('log',a);
-      console.error = (...a) => _s('error',a);
-      console.warn  = (...a) => _s('warn',a);
-      console.info  = (...a) => _s('info',a);
-      console.table = (...a) => _s('log',a);
-      try { ${code} } catch(e){ parent.postMessage({type:'error',data:e.message},'*'); }
-      parent.postMessage({type:'__done__'},'*');
+        try{return typeof a===\'object\'?JSON.stringify(a,null,2):String(a);}catch(e){return String(a);}
+      }).join(\' \')},\'*\');
+      console.log   = (...a) => _s(\'log\',a);
+      console.error = (...a) => _s(\'error\',a);
+      console.warn  = (...a) => _s(\'warn\',a);
+      console.info  = (...a) => _s(\'info\',a);
+      console.table = (...a) => _s(\'log\',a);
+      try { ${code} } catch(e){ parent.postMessage({type:\'error\',data:e.message},\'*\'); }
+      parent.postMessage({type:\'__done__\'},\'*\');
     <\/script></body></html>`;
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
@@ -71,6 +98,32 @@ export function runJavaScript(code) {
 
 export async function runTypeScript(code) {
   try {
+    // Check for import statements
+    if (/^\s*import\s+/m.test(code) || /^\s*export\s+|from\s+['"]/m.test(code)) {
+      return {
+        stdout: '',
+        stderr: [
+          '⚠️  Import/Export statements are not supported in browser mode.',
+          '',
+          '💡 What\'s happening?',
+          'This playground runs entirely in your browser without a build system.',
+          'TypeScript with imports requires bundlers like Webpack or Vite.',
+          '',
+          '✅ What you can do instead:',
+          '• Write standalone TypeScript code (no imports)',
+          '• Use type annotations and interfaces',
+          '• Create classes and functions that work independently',
+          '• All TypeScript features except imports work great!',
+          '',
+          '📝 Example:',
+          '❌ import axios from "axios";',
+          '✅ interface User { name: string; }',
+          '✅ const greet = (u: User): string => `Hello, ${u.name}!`;',
+        ].join('\n'),
+        error: null,
+      };
+    }
+
     if (!window.Babel) await loadScript('https://unpkg.com/@babel/standalone/babel.min.js');
     const compiled = window.Babel.transform(code, { presets: ['typescript'], filename: 'c.ts' }).code;
     return runJavaScript(compiled);
@@ -128,14 +181,148 @@ export async function runSQL(code) {
   } catch (e) { return err(e.message); }
 }
 
-// ─── Python (Pyodide) — called via context ────────────────────────────────────
-// Handled externally — PlaygroundContext.runPython is passed in.
+// ─── Python (Pyodide) — 100% in-browser ─────────────────────────────────────
+
+let pyodideInstance = null;
+let pyodideLoading = false;
+
+async function ensurePyodide() {
+  if (pyodideInstance) return pyodideInstance;
+  if (pyodideLoading) {
+    // Wait for existing load
+    while (pyodideLoading) {
+      await new Promise(r => setTimeout(r, 100));
+    }
+    return pyodideInstance;
+  }
+  
+  pyodideLoading = true;
+  try {
+    if (!window.loadPyodide) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Failed to load Pyodide'));
+        document.head.appendChild(script);
+      });
+    }
+    
+    pyodideInstance = await window.loadPyodide({
+      indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/',
+    });
+    
+    // Setup stdout/stderr capture
+    pyodideInstance.runPython(`
+import sys, io
+class _Cap(io.StringIO): pass
+sys.stdout = _Cap()
+sys.stderr = _Cap()
+    `);
+    
+    pyodideLoading = false;
+    return pyodideInstance;
+  } catch (e) {
+    pyodideLoading = false;
+    throw e;
+  }
+}
+
+export async function runPython(code, stdin = '') {
+  try {
+    // Check for common import statements that won't work in browser
+    const importMatch = code.match(/^\s*(import|from)\s+([\w.]+)/m);
+    if (importMatch) {
+      const importedModule = importMatch[2];
+      const isStandardLib = [
+        'math', 'random', 'datetime', 'time', 'sys', 'os', 'json', 're', 
+        'collections', 'itertools', 'functools', 'typing', 'statistics',
+        'string', 'textwrap', 'unicodedata', 'struct', 'codecs', 'copy',
+        'pprint', 'reprlib', 'enum', 'graphlib', 'contextlib', 'abc'
+      ].some(lib => importedModule.startsWith(lib));
+      
+      if (!isStandardLib) {
+        return {
+          stdout: '',
+          stderr: [
+            `⚠️  The module '${importedModule}' may not be available in browser mode.`,
+            '',
+            '💡 What\'s happening?',
+            'This playground runs Python in your browser using Pyodide (WebAssembly).',
+            'Only Python standard library and some pre-installed packages are available.',
+            '',
+            '✅ Available modules:',
+            '• Standard library: math, random, datetime, json, re, collections, etc.',
+            '• Scientific: numpy, pandas, matplotlib, scipy (pre-installed)',
+            '• You can install pure-Python packages with: import micropip; await micropip.install(\'package-name\')',
+            '',
+            '❌ Not available:',
+            '• System modules: socket, threading, multiprocessing, subprocess',
+            '• C-extensions that aren\'t compiled for WebAssembly',
+            '',
+            '📝 Example:',
+            '✅ import math',
+            '✅ print(math.sqrt(16))',
+            '❌ import requests  # Use: from js import fetch instead',
+          ].join('\n'),
+          error: null,
+        };
+      }
+    }
+
+    const py = await ensurePyodide();
+    
+    // Reset stdout/stderr
+    py.runPython('sys.stdout = _Cap()\nsys.stderr = _Cap()');
+    
+    let error = null;
+    try {
+      py.runPython(code);
+    } catch (e) {
+      error = e.message;
+    }
+    
+    const stdout = py.runPython('sys.stdout.getvalue()');
+    const stderr = py.runPython('sys.stderr.getvalue()');
+    
+    return { stdout, stderr, error };
+  } catch (e) {
+    return err(`Python Error: ${e.message}`);
+  }
+}
 
 // ─── PHP (lite — basic echo/print only via eval trick) ───────────────────────
 
 export function runPHP(code) {
   // Very basic PHP simulation for echo/print/variables
   try {
+    // Check for require/include statements
+    if (/\b(require|require_once|include|include_once)\s*['"(]/i.test(code)) {
+      return Promise.resolve({
+        stdout: '',
+        stderr: [
+          '⚠️  File inclusion statements are not supported in browser mode.',
+          '',
+          '💡 What\'s happening?',
+          'This playground runs PHP code by simulating it in JavaScript.',
+          'Statements like require, include need a server filesystem.',
+          '',
+          '✅ What you can do instead:',
+          '• Use echo, print for output',
+          '• Work with variables, arrays, loops',
+          '• Create functions and classes',
+          '• All basic PHP syntax works great!',
+          '',
+          '📝 Example:',
+          '❌ require \'config.php\';',
+          '❌ include \'header.php\';',
+          '✅ echo "Hello World";',
+          '✅ $name = "John"; echo "Hi, $name!";',
+        ].join('\n'),
+        error: null,
+      });
+    }
+
     const lines = [];
     const normalized = code.replace(/<\?php\s*/gi, '').replace(/\?>/gi, '');
     // Convert basic PHP to JS
@@ -250,7 +437,123 @@ export function runRegex(code) {
   } catch (e) { return Promise.resolve(err(e.message)); }
 }
 
-// ─── Server-side message ──────────────────────────────────────────────────────
+// ─── Server-style local simulation (no API/backend) ──────────────────────────
+
+function extractQuotedText(s = '') {
+  const out = [];
+  const re = /"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'|`([^`\\]*(?:\\.[^`\\]*)*)`/g;
+  let m;
+  while ((m = re.exec(s)) !== null) {
+    const raw = m[1] ?? m[2] ?? m[3] ?? '';
+    out.push(
+      raw
+        .replace(/\\n/g, '\n')
+        .replace(/\\t/g, '\t')
+        .replace(/\\"/g, '"')
+        .replace(/\\'/g, "'")
+    );
+  }
+  return out;
+}
+
+function firstNonEmptyLine(code) {
+  const lines = code.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed) return trimmed;
+  }
+  return '';
+}
+
+function makeSimulationHeader(language) {
+  return `ℹ Running ${language} in local browser simulation mode (no API/backend).`;
+}
+
+function runServerLanguageLocally(language, code) {
+  try {
+    const lines = code.split('\n');
+    const out = [];
+    const lowerLang = language.toLowerCase();
+    const pushTexts = (texts) => texts.forEach(t => out.push(t));
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line) continue;
+
+      if (/^printf\s*\(/.test(line)) {
+        pushTexts(extractQuotedText(line));
+        continue;
+      }
+      if (/std::cout\s*<</.test(line) || /cout\s*<</.test(line)) {
+        pushTexts(extractQuotedText(line));
+        continue;
+      }
+      if (/System\.out\.print/.test(line) || /System\.out\.println/.test(line)) {
+        pushTexts(extractQuotedText(line));
+        continue;
+      }
+      if (/fmt\.Print/.test(line)) {
+        pushTexts(extractQuotedText(line));
+        continue;
+      }
+      if (/println!\s*\(/.test(line) || /print!\s*\(/.test(line)) {
+        pushTexts(extractQuotedText(line));
+        continue;
+      }
+      if (/^\s*puts\s+/.test(line) || /^\s*print\s+/.test(line)) {
+        pushTexts(extractQuotedText(line));
+        continue;
+      }
+      if (/^\s*echo\s+/.test(line) && (lowerLang === 'bash' || lowerLang === 'batch' || lowerLang === 'shell' || lowerLang === 'sh')) {
+        const txt = line.replace(/^echo\s+/i, '').replace(/^@/g, '').trim();
+        if (txt) out.push(txt);
+        continue;
+      }
+      if (/^\s*println\s*\(/.test(line) || /^\s*print\s*\(/.test(line)) {
+        pushTexts(extractQuotedText(line));
+        continue;
+      }
+      if (/Console\.Write/.test(line)) {
+        pushTexts(extractQuotedText(line));
+        continue;
+      }
+      if (/Write-Host|Write-Output/.test(line)) {
+        pushTexts(extractQuotedText(line));
+        continue;
+      }
+      if (/^\s*cat\s*\(/.test(line)) {
+        pushTexts(extractQuotedText(line));
+        continue;
+      }
+      if (/^\s*print\s+["']/.test(line) && lowerLang === 'perl') {
+        pushTexts(extractQuotedText(line));
+      }
+    }
+
+    const header = makeSimulationHeader(language);
+    if (out.length) {
+      return Promise.resolve(ok([header, '', ...out].join('\n')));
+    }
+
+    const hint = [
+      header,
+      '',
+      'No direct print statement was detected.',
+      'Supported output patterns include:',
+      '• C/C++: printf(...), cout << ...',
+      '• Java/Kotlin/Scala/C#: println(...), System.out.println(...), Console.WriteLine(...)',
+      '• Go/Rust: fmt.Println(...), println!(...)',
+      '• Shell/Batch/PowerShell: echo, Write-Host',
+      '',
+      `First code line: ${firstNonEmptyLine(code) || '(empty)'}`,
+    ];
+    return Promise.resolve(ok(hint.join('\n')));
+  } catch (e) {
+    return Promise.resolve(err(`Simulation Error: ${e.message}`));
+  }
+}
+
+// ─── Server-side fallback message ─────────────────────────────────────────────
 
 export function runUnsupported(language) {
   return Promise.resolve({
@@ -334,7 +637,7 @@ export function resolveEngine(language = '') {
 /**
  * Master dispatch
  */
-export async function executeCode(code, language, runPython, stdin = '') {
+export async function executeCode(code, language, stdin = '') {
   const { engine, label } = resolveEngine(language);
   switch (engine) {
     case 'js': return runJavaScript(code);
@@ -348,10 +651,8 @@ export async function executeCode(code, language, runPython, stdin = '') {
     case 'bf': return runBrainfuck(code);
     case 'regex': return runRegex(code);
     case 'php': return runPHP(code);
-    case 'py': {
-      if (!runPython) return err('Python runtime not available');
-      return runPython(code, stdin);
-    }
+    case 'py': return runPython(code, stdin);
+    case 'server': return runServerLanguageLocally(label, code);
     default: return runUnsupported(label);
   }
 }
